@@ -1,10 +1,9 @@
 """SQLAlchemy database models for polyhear."""
 
 from datetime import datetime
-from typing import Optional
 
-from sqlalchemy import Column, DateTime, Integer, String, Text, func
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import DateTime, Integer, String, Text, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -18,15 +17,15 @@ class DBProject(Base):
 
     __tablename__ = "projects"
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    name: str = Column(String(255), nullable=False, unique=True)
-    path: str = Column(String(1024), nullable=False, unique=True)
-    group_name: Optional[str] = Column(String(255), nullable=True)
-    parent_name: Optional[str] = Column(String(255), nullable=True)
-    build_log: Optional[str] = Column(String(1024), nullable=True)
-    test_log: Optional[str] = Column(String(1024), nullable=True)
-    created_at: datetime = Column(DateTime, default=func.now())
-    updated_at: datetime = Column(DateTime, default=func.now(), onupdate=func.now())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    path: Mapped[str] = mapped_column(String(1024), nullable=False, unique=True)
+    group_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    parent_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    build_log: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    test_log: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
 
 
 class DBProjectSnapshot(Base):
@@ -34,18 +33,18 @@ class DBProjectSnapshot(Base):
 
     __tablename__ = "project_snapshots"
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    project_name: str = Column(String(255), nullable=False, index=True)
-    branch: Optional[str] = Column(String(255), nullable=True)
-    commit_hash: Optional[str] = Column(String(40), nullable=True)
-    status_json: Optional[str] = Column(Text, nullable=True)
-    build_status: Optional[str] = Column(String(50), nullable=True)
-    test_status: Optional[str] = Column(String(50), nullable=True)
-    test_passed: Optional[int] = Column(Integer, nullable=True)
-    test_failed: Optional[int] = Column(Integer, nullable=True)
-    todo_count: Optional[int] = Column(Integer, nullable=True)
-    fixme_count: Optional[int] = Column(Integer, nullable=True)
-    created_at: datetime = Column(DateTime, default=func.now(), index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    branch: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    commit_hash: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    status_json: Mapped[str | None] = mapped_column(Text, nullable=True)
+    build_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    test_status: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    test_passed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    test_failed: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    todo_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    fixme_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), index=True)
 
 
 class DBLLMSummary(Base):
@@ -53,14 +52,14 @@ class DBLLMSummary(Base):
 
     __tablename__ = "llm_summaries"
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    project_name: str = Column(String(255), nullable=False, index=True)
-    snapshot_id: Optional[int] = Column(Integer, nullable=True)
-    prompt: Optional[str] = Column(Text, nullable=True)
-    response: Optional[str] = Column(Text, nullable=True)
-    model: Optional[str] = Column(String(100), nullable=True)
-    tokens_used: Optional[int] = Column(Integer, nullable=True)
-    created_at: datetime = Column(DateTime, default=func.now(), index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    snapshot_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    prompt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    tokens_used: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), index=True)
 
 
 class DBBuildLog(Base):
@@ -68,12 +67,12 @@ class DBBuildLog(Base):
 
     __tablename__ = "build_logs"
 
-    id: int = Column(Integer, primary_key=True, autoincrement=True)
-    project_name: str = Column(String(255), nullable=False, index=True)
-    type: str = Column(String(50), nullable=False)  # 'build' or 'test'
-    command: Optional[str] = Column(Text, nullable=True)
-    exit_code: Optional[int] = Column(Integer, nullable=True)
-    stdout: Optional[str] = Column(Text, nullable=True)
-    stderr: Optional[str] = Column(Text, nullable=True)
-    duration_ms: Optional[int] = Column(Integer, nullable=True)
-    created_at: datetime = Column(DateTime, default=func.now(), index=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    type: Mapped[str] = mapped_column(String(50), nullable=False)  # 'build' or 'test'
+    command: Mapped[str | None] = mapped_column(Text, nullable=True)
+    exit_code: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    stdout: Mapped[str | None] = mapped_column(Text, nullable=True)
+    stderr: Mapped[str | None] = mapped_column(Text, nullable=True)
+    duration_ms: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), index=True)

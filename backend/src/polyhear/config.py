@@ -8,18 +8,13 @@ Configuration is loaded from multiple sources with the following priority:
 """
 
 import os
-import sys
+import tomllib
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
-
-if sys.version_info >= (3, 11):
-    import tomllib
-else:
-    import tomli as tomllib
 
 
 class UISettings(BaseModel):
@@ -113,10 +108,10 @@ class ProjectConfig(BaseModel):
 
     name: str
     path: str
-    group: Optional[str] = None
-    parent: Optional[str] = None
-    build_log: Optional[str] = None
-    test_log: Optional[str] = None
+    group: str | None = None
+    parent: str | None = None
+    build_log: str | None = None
+    test_log: str | None = None
 
 
 class DatabaseSettings(BaseModel):
@@ -133,12 +128,12 @@ class Settings(BaseSettings):
     config_dir: str = Field(default="/app/config", alias="POLYHEAR_CONFIG_DIR")
     data_dir: str = Field(default="/app/data", alias="POLYHEAR_DATA_DIR")
     port: int = Field(default=8000, alias="POLYHEAR_PORT")
-    
+
     # Path translation for Docker environment
-    host_root: Optional[str] = Field(default=None, alias="POLYHEAR_HOST_ROOT")
-    host_home: Optional[str] = Field(default=None, alias="POLYHEAR_HOST_HOME")
-    container_root: Optional[str] = Field(default=None, alias="POLYHEAR_CONTAINER_ROOT")
-    container_home: Optional[str] = Field(default=None, alias="POLYHEAR_CONTAINER_HOME")
+    host_root: str | None = Field(default=None, alias="POLYHEAR_HOST_ROOT")
+    host_home: str | None = Field(default=None, alias="POLYHEAR_HOST_HOME")
+    container_root: str | None = Field(default=None, alias="POLYHEAR_CONTAINER_ROOT")
+    container_home: str | None = Field(default=None, alias="POLYHEAR_CONTAINER_HOME")
 
     # Loaded from TOML
     ui: UISettings = Field(default_factory=UISettings)
@@ -183,7 +178,9 @@ def find_config_paths() -> tuple[Path, Path, Path]:
         Path(__file__).parent.parent.parent.parent / "config" / "default.toml",  # dev layout
         Path("/app/config/default.toml"),  # docker layout
     ]
-    default_config = next((p for p in possible_default_paths if p.exists()), possible_default_paths[0])
+    default_config = next(
+        (p for p in possible_default_paths if p.exists()), possible_default_paths[0]
+    )
 
     # User config directory
     config_dir = Path(os.environ.get("POLYHEAR_CONFIG_DIR", ""))
@@ -209,7 +206,7 @@ def load_config() -> dict[str, Any]:
     return config
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Get application settings (cached)."""
     config = load_config()
@@ -226,20 +223,19 @@ def clear_settings_cache() -> None:
 
 def translate_project_path(path: str, settings: Settings) -> str:
     """Translate a project path from host format to container format.
-    
+
     Supports:
     - Absolute paths: /home/dev/repos/... -> /mnt/repos/...
     - Tilde paths: ~/.local/share/... -> /mnt/home/.local/share/...
-    
+
     Args:
         path: The path to translate (host-side format)
         settings: Application settings with path translation config
-        
+
     Returns:
         Translated path suitable for container environment
     """
-    original_path = path
-    
+
     # Expand tilde to home directory
     if path.startswith("~"):
         if settings.host_home:
@@ -248,50 +244,50 @@ def translate_project_path(path: str, settings: Settings) -> str:
         else:
             # Fallback: use Python's path expansion
             path = str(Path(path).expanduser())
-    
+
     # Convert absolute host paths to container paths
     if settings.host_root and settings.container_root and path.startswith(settings.host_root):
         # Replace host root with container root
         relative = path[len(settings.host_root):].lstrip("/")
         path = str(Path(settings.container_root) / relative)
-    
+
     # Convert home directory paths to container home paths
     elif settings.host_home and settings.container_home and path.startswith(settings.host_home):
         # Replace host home with container home
         relative = path[len(settings.host_home):].lstrip("/")
         path = str(Path(settings.container_home) / relative)
-    
+
     return path
 
 
 def translate_project_paths(settings: Settings) -> Settings:
     """Translate all project paths in settings from host to container format.
-    
+
     Args:
         settings: Settings with potentially host-side paths
-        
+
     Returns:
         Settings with translated container-side paths
     """
     if not settings.projects:
         return settings
-    
+
     # Only translate if we have translation configuration
     needs_translation = (
         settings.host_root and settings.container_root
     ) or (
         settings.host_home and settings.container_home
     )
-    
+
     if not needs_translation:
         return settings
-    
+
     # Translate each project path
     translated_projects = []
     for project in settings.projects:
         translated_project = project.model_copy()
         translated_project.path = translate_project_path(project.path, settings)
         translated_projects.append(translated_project)
-    
+
     settings.projects = translated_projects
     return settings

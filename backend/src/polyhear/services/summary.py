@@ -5,7 +5,6 @@ Phase 2: Will add LLM-based summary generation.
 """
 
 import re
-from typing import Optional
 
 from polyhear.models.project import (
     BuildStatus,
@@ -15,7 +14,6 @@ from polyhear.models.project import (
     TestStatus,
     WorkingStatus,
 )
-
 
 # Conventional commit prefixes
 COMMIT_PREFIXES = {
@@ -33,7 +31,7 @@ COMMIT_PREFIXES = {
 }
 
 
-def parse_commit_message(message: str) -> tuple[Optional[str], str]:
+def parse_commit_message(message: str) -> tuple[str | None, str]:
     """Parse a commit message to extract type and description.
 
     Returns:
@@ -61,7 +59,7 @@ def summarize_commit(message: str) -> str:
     return description
 
 
-def generate_completed_summary(commits: list[LastCommit]) -> Optional[str]:
+def generate_completed_summary(commits: list[LastCommit]) -> str | None:
     """Generate summary of completed work from recent commits."""
     if not commits:
         return None
@@ -80,7 +78,7 @@ def generate_completed_summary(commits: list[LastCommit]) -> Optional[str]:
 def generate_working_summary(
     status: WorkingStatus,
     uncommitted_changes: list[dict[str, str]],
-) -> Optional[str]:
+) -> str | None:
     """Generate summary of current work in progress."""
     if status.clean:
         return None
@@ -140,7 +138,7 @@ def generate_working_summary(
 def generate_failed_summary(
     build_status: BuildStatus,
     test_status: TestStatus,
-) -> Optional[str]:
+) -> str | None:
     """Generate summary of failures."""
     failures = []
 

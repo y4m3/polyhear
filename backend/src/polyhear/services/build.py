@@ -7,12 +7,9 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-from polyhear.config import get_settings
 from polyhear.models.project import BuildStatus, StatusLevel, TestStatus
 from polyhear.services.git import detect_project_type
-
 
 # Log file search paths by project type
 LOG_FILE_PATTERNS = {
@@ -52,9 +49,9 @@ LOG_FILE_PATTERNS = {
 def find_log_file(
     repo_path: str | Path,
     log_type: str,
-    custom_path: Optional[str] = None,
-    project_type: Optional[str] = None,
-) -> Optional[Path]:
+    custom_path: str | None = None,
+    project_type: str | None = None,
+) -> Path | None:
     """Find a log file in the repository.
 
     Priority:
@@ -103,7 +100,7 @@ def parse_build_log(log_path: Path) -> BuildStatus:
     """
     try:
         content = log_path.read_text()
-    except (IOError, OSError):
+    except OSError:
         return BuildStatus(status=StatusLevel.UNKNOWN)
 
     status = StatusLevel.UNKNOWN
@@ -190,7 +187,7 @@ def parse_test_log(log_path: Path) -> TestStatus:
     """
     try:
         content = log_path.read_text()
-    except (IOError, OSError):
+    except OSError:
         return TestStatus(status=StatusLevel.UNKNOWN)
 
     # Try JSON format first
@@ -327,7 +324,7 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
 
 async def get_build_status(
     repo_path: str | Path,
-    custom_log_path: Optional[str] = None,
+    custom_log_path: str | None = None,
 ) -> BuildStatus:
     """Get build status from log file."""
     repo_path = Path(repo_path)
@@ -342,7 +339,7 @@ async def get_build_status(
 
 async def get_test_status(
     repo_path: str | Path,
-    custom_log_path: Optional[str] = None,
+    custom_log_path: str | None = None,
 ) -> TestStatus:
     """Get test status from log file."""
     repo_path = Path(repo_path)

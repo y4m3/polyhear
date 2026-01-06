@@ -3,7 +3,7 @@
 import asyncio
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
@@ -21,7 +21,6 @@ from polyhear.models.project import (
     ProjectListResponse,
     ProjectSummary,
     RemoteStatus,
-    StatusLevel,
     TestStatus,
     WorkingStatus,
 )
@@ -52,9 +51,9 @@ def resolve_path(path: str) -> Path:
 async def collect_project_data(
     project_id: str,
     project_path: Path,
-    build_log: Optional[str] = None,
-    test_log: Optional[str] = None,
-    parent: Optional[str] = None,
+    build_log: str | None = None,
+    test_log: str | None = None,
+    parent: str | None = None,
     include_detail: bool = False,
 ) -> Project | ProjectDetail:
     """Collect all data for a project."""
@@ -118,20 +117,33 @@ async def collect_project_data(
         return_exceptions=True,
     )
 
-    branch = results[0] if not isinstance(results[0], Exception) else "unknown"
-    status = results[1] if not isinstance(results[1], Exception) else WorkingStatus()
-    remote = results[2] if not isinstance(results[2], Exception) else RemoteStatus()
-    commits = results[3] if not isinstance(results[3], Exception) else []
-    build_status = results[4] if not isinstance(results[4], Exception) else BuildStatus()
-    test_status = results[5] if not isinstance(results[5], Exception) else TestStatus()
-    todo_counts = results[6] if not isinstance(results[6], Exception) else {}
+    # Extract results with proper type handling
+    branch: str = results[0] if isinstance(results[0], str) else "unknown"
+    status: WorkingStatus = (
+        results[1] if isinstance(results[1], WorkingStatus) else WorkingStatus()
+    )
+    remote: RemoteStatus = (
+        results[2] if isinstance(results[2], RemoteStatus) else RemoteStatus()
+    )
+    commits: list[LastCommit] = (
+        results[3] if isinstance(results[3], list) else []
+    )
+    build_status: BuildStatus = (
+        results[4] if isinstance(results[4], BuildStatus) else BuildStatus()
+    )
+    test_status: TestStatus = (
+        results[5] if isinstance(results[5], TestStatus) else TestStatus()
+    )
+    todo_counts: dict[str, int] = (
+        results[6] if isinstance(results[6], dict) else {}
+    )
 
     # Count TODOs and FIXMEs
     todo_count = todo_counts.get("TODO", 0)
     fixme_count = todo_counts.get("FIXME", 0)
 
     # Get uncommitted changes for summary
-    uncommitted = []
+    uncommitted: list[dict[str, str]] = []
     if not status.clean:
         uncommitted = await git.get_uncommitted_changes(project_path)
 
@@ -182,12 +194,12 @@ async def collect_project_data(
 
 async def get_all_projects_config(
     session: AsyncSession,
-) -> list[dict]:
+) -> list[dict[str, Any]]:
     """Get all project configurations from both local.toml and database."""
     settings = get_settings()
 
     # Projects from local.toml
-    config_projects = {
+    config_projects: dict[str, dict[str, Any]] = {
         p.name: {
             "name": p.name,
             "path": p.path,
@@ -239,7 +251,7 @@ async def list_projects(
     projects = await asyncio.gather(*tasks, return_exceptions=True)
 
     # Filter out exceptions and convert to list
-    valid_projects = [
+    valid_projects: list[Project] = [
         p for p in projects
         if isinstance(p, Project) and not isinstance(p, Exception)
     ]
@@ -315,10 +327,9 @@ async def create_project(
     path = resolve_path(project.path)
     is_valid, error = await git.check_is_git_repo(path)
     if not is_valid:
-        raise HTTPException(
-            status_code=400,
-            detail=f"{error.message if error else 'Invalid path'}: {error.details if error else ''}",
-        )
+        msg = error.message if error else "Invalid path"
+        details = error.details if error else ""
+        raise HTTPException(status_code=400, detail=f"{msg}: {details}")
 
     # Create database entry
     db_project = DBProject(
@@ -351,7 +362,7 @@ async def create_project(
 async def delete_project(
     project_id: str,
     session: AsyncSession = Depends(get_session),
-) -> dict:
+) -> dict[str, str]:
     """Remove a project from monitoring."""
     result = await session.execute(
         select(DBProject).where(DBProject.name == project_id)
