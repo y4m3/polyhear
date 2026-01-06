@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check
+        name: Run checks
+        entry: just check
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

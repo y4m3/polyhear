@@ -128,6 +128,40 @@ lint-backend:
 lint-frontend:
     cd frontend && npm run lint
 
+# === Type Checking ===
+
+# Run type checkers
+typecheck: typecheck-backend typecheck-frontend
+
+# Type check backend
+typecheck-backend:
+    cd backend && uv run mypy src/
+
+# Type check frontend
+typecheck-frontend:
+    cd frontend && npm run typecheck
+
+# === Quality Checks ===
+
+# Run all checks (lint + typecheck + test)
+check: lint typecheck test
+    @echo "All checks passed!"
+
+# Check development environment
+doctor:
+    #!/usr/bin/env bash
+    echo "Checking development environment..."
+    echo ""
+    command -v just &> /dev/null && echo "  just: OK ($(just --version 2>/dev/null | head -1))" || echo "  just: NOT FOUND"
+    command -v uv &> /dev/null && echo "  uv: OK ($(uv --version 2>/dev/null))" || echo "  uv: NOT FOUND"
+    command -v node &> /dev/null && echo "  node: OK ($(node --version 2>/dev/null))" || echo "  node: NOT FOUND"
+    command -v npm &> /dev/null && echo "  npm: OK ($(npm --version 2>/dev/null))" || echo "  npm: NOT FOUND"
+    command -v docker &> /dev/null && echo "  docker: OK" || echo "  docker: NOT FOUND (optional)"
+    echo ""
+    [ -d "backend/.venv" ] && echo "  backend/.venv: OK" || echo "  backend/.venv: NOT FOUND (run: just setup)"
+    [ -d "frontend/node_modules" ] && echo "  node_modules: OK" || echo "  node_modules: NOT FOUND (run: just setup)"
+    [ -f ".env.local" ] && echo "  .env.local: OK" || echo "  .env.local: NOT FOUND (run: just setup-worktree)"
+
 # === Formatting ===
 
 # Format all code
