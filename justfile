@@ -90,7 +90,7 @@ setup-worktree: setup
         {
             echo "POLYHEAR_PORT=$BACKEND_PORT"
             echo "VITE_PORT=$FRONTEND_PORT"
-            echo "POLYHEAR_DATA_DIR=data"
+            echo "POLYHEAR_DATA_DIR=./data"
         } > .env.local
 
         echo ""
