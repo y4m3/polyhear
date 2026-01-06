@@ -1,0 +1,69 @@
+services:
+  polyhear:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${POLYHEAR_PORT:-8000}:8000"
+    volumes:
+      # Monitored repositories (read-only)
+      - ${POLYHEAR_REPOS_ROOT:-$HOME/dev}:/mnt/repos:ro
+      # Home directory for tilde expansion (read-only)
+      - ${HOME}:/mnt/home:ro
+      # Config files
+      - ${POLYHEAR_CONFIG_DIR:-$HOME/.config/polyhear}:/app/config:ro
+      # Data persistence (SQLite, logs)
+      - ${POLYHEAR_DATA_DIR:-$HOME/.local/share/polyhear}:/app/data
+    environment:
+      - POLYHEAR_REPOS_ROOT=/mnt/repos
+      - POLYHEAR_CONFIG_DIR=/app/config
+      - POLYHEAR_DATA_DIR=/app/data
+      # Path translation for host -> container mapping
+      - POLYHEAR_HOST_ROOT=${POLYHEAR_HOST_ROOT:-${HOME}/dev}
+      - POLYHEAR_HOST_HOME=${POLYHEAR_HOST_HOME:-${HOME}}
+      - POLYHEAR_CONTAINER_ROOT=/mnt/repos
+      - POLYHEAR_CONTAINER_HOME=/mnt/home
+      # LLM API keys
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    restart: unless-stopped
+
+  # Development services
+  dev-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app/backend
+      - ./config:/app/config:ro
+      - ${POLYHEAR_REPOS_ROOT:-$HOME/dev}:/mnt/repos:ro
+      - ${HOME}:/mnt/home:ro
+      - ${POLYHEAR_DATA_DIR:-./data}:/app/data
+    environment:
+      - POLYHEAR_REPOS_ROOT=/mnt/repos
+      - POLYHEAR_CONFIG_DIR=/app/config
+      - POLYHEAR_DATA_DIR=/app/data
+      # Path translation for host -> container mapping
+      - POLYHEAR_HOST_ROOT=${POLYHEAR_HOST_ROOT:-${HOME}/dev}
+      - POLYHEAR_HOST_HOME=${POLYHEAR_HOST_HOME:-${HOME}}
+      - POLYHEAR_CONTAINER_ROOT=/mnt/repos
+      - POLYHEAR_CONTAINER_HOME=/mnt/home
+    command: ["uvicorn", "polyhear.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    profiles:
+      - dev
+
+  dev-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app/frontend
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    profiles:
+      - dev

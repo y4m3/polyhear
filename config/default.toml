@@ -1,0 +1,57 @@
+# polyhear default configuration
+# This file is distributed with the application and contains default values.
+# Override these settings in ~/.config/polyhear/config.toml or local.toml
+
+[ui]
+theme = "dark"
+refresh_interval = 30  # seconds
+max_commits = 5
+
+[summary]
+scan_todo = true
+todo_patterns = ["TODO", "FIXME", "HACK"]
+
+[build]
+timeout = 300  # seconds
+
+# Default commands by project type
+[defaults.node]
+build_cmd = "npm run build"
+test_cmd = "npm test"
+build_log = ".build.log"
+test_log = ".test-results.json"
+
+[defaults.rust]
+build_cmd = "cargo build"
+test_cmd = "cargo test"
+build_log = "target/.build.log"
+test_log = "target/.test.log"
+
+[defaults.python]
+build_cmd = ""
+test_cmd = "pytest"
+build_log = ".build.log"
+test_log = "pytest.log"
+
+[defaults.go]
+build_cmd = "go build"
+test_cmd = "go test ./..."
+build_log = ".build.log"
+test_log = ".test.log"
+
+# LLM settings (Phase 2)
+[llm]
+enabled = false
+provider = "anthropic"  # "anthropic" | "openai" | "ollama"
+
+[llm.anthropic]
+model = "claude-sonnet-4-20250514"
+api_key_env = "ANTHROPIC_API_KEY"
+
+[llm.openai]
+model = "gpt-4o"
+api_key_env = "OPENAI_API_KEY"
+
+[llm.ollama]
+endpoint = "http://localhost:11434"
+model = "llama3"
