@@ -42,13 +42,15 @@ WORKDIR /app/backend
 # ==============================================================================
 FROM backend-base AS backend-dev
 
+# Install dependencies to /app/.venv (outside the mounted volume)
+ENV UV_PROJECT_ENVIRONMENT=/app/.venv
 COPY backend/pyproject.toml backend/uv.lock* ./
 RUN uv sync --frozen || uv sync
 
 COPY backend/ ./
 COPY config/ /app/config/
 
-ENV PATH="/app/backend/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 
 # ==============================================================================

@@ -3,9 +3,7 @@
 import asyncio
 import re
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from polyhear.models.project import (
     LastCommit,
@@ -51,13 +49,13 @@ async def run_git_command(
             returncode=proc.returncode or 0,
         )
 
-    except asyncio.TimeoutError:
+    except TimeoutError:
         raise TimeoutError(f"Git command timed out: {' '.join(cmd)}")
     except FileNotFoundError:
         raise RuntimeError("Git is not installed or not in PATH")
 
 
-async def check_is_git_repo(path: str | Path) -> tuple[bool, Optional[ProjectError]]:
+async def check_is_git_repo(path: str | Path) -> tuple[bool, ProjectError | None]:
     """Check if a path is a valid git repository."""
     path = Path(path)
 
@@ -265,9 +263,7 @@ async def get_worktrees(repo_path: str | Path) -> list[WorktreeInfo]:
                 worktrees.append(
                     WorktreeInfo(
                         path=current_worktree.get("worktree", ""),
-                        branch=current_worktree.get("branch", "").replace(
-                            "refs/heads/", ""
-                        ),
+                        branch=current_worktree.get("branch", "").replace("refs/heads/", ""),
                         commit_hash=current_worktree.get("HEAD", ""),
                         is_bare=current_worktree.get("bare") == "bare",
                         is_detached="detached" in current_worktree,
@@ -305,7 +301,7 @@ async def get_worktrees(repo_path: str | Path) -> list[WorktreeInfo]:
 async def search_patterns(
     repo_path: str | Path,
     patterns: list[str],
-    file_extensions: Optional[list[str]] = None,
+    file_extensions: list[str] | None = None,
 ) -> dict[str, int]:
     """Search for patterns (TODO, FIXME, etc.) in the repository."""
     if not patterns:
@@ -366,7 +362,7 @@ async def search_patterns(
     return counts
 
 
-def detect_project_type(repo_path: str | Path) -> Optional[str]:
+def detect_project_type(repo_path: str | Path) -> str | None:
     """Detect the project type based on files present."""
     path = Path(repo_path)
 

@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -30,17 +29,17 @@ class RemoteStatus(BaseModel):
 
     ahead: int = 0
     behind: int = 0
-    tracking: Optional[str] = None
+    tracking: str | None = None
 
 
 class BuildStatus(BaseModel):
     """Build status from log file."""
 
     status: StatusLevel = StatusLevel.UNKNOWN
-    exit_code: Optional[int] = None
-    duration_seconds: Optional[float] = None
-    timestamp: Optional[datetime] = None
-    message: Optional[str] = None
+    exit_code: int | None = None
+    duration_seconds: float | None = None
+    timestamp: datetime | None = None
+    message: str | None = None
 
 
 class TestStatus(BaseModel):
@@ -50,8 +49,8 @@ class TestStatus(BaseModel):
     passed: int = 0
     failed: int = 0
     skipped: int = 0
-    duration_ms: Optional[int] = None
-    timestamp: Optional[datetime] = None
+    duration_ms: int | None = None
+    timestamp: datetime | None = None
     failures: list[dict[str, str]] = Field(default_factory=list)
 
 
@@ -61,15 +60,15 @@ class LastCommit(BaseModel):
     hash: str
     message: str
     time: str  # Relative time like "5 minutes ago"
-    author: Optional[str] = None
+    author: str | None = None
 
 
 class ProjectSummary(BaseModel):
     """Progress summary for a project."""
 
-    completed: Optional[str] = None
-    working: Optional[str] = None
-    failed: Optional[str] = None
+    completed: str | None = None
+    working: str | None = None
+    failed: str | None = None
     todos: int = 0
     fixmes: int = 0
 
@@ -80,7 +79,7 @@ class ProjectError(BaseModel):
     code: str
     message: str
     suggestion: str
-    details: Optional[str] = None
+    details: str | None = None
 
 
 class WorktreeInfo(BaseModel):
@@ -104,10 +103,10 @@ class Project(BaseModel):
     remote: RemoteStatus
     build: BuildStatus
     test: TestStatus
-    last_commit: Optional[LastCommit] = None
+    last_commit: LastCommit | None = None
     summary: ProjectSummary
-    error: Optional[ProjectError] = None
-    parent: Optional[str] = None  # Parent project name for worktrees
+    error: ProjectError | None = None
+    parent: str | None = None  # Parent project name for worktrees
     worktrees: list["Project"] = Field(default_factory=list)
 
 
@@ -116,7 +115,7 @@ class ProjectDetail(Project):
 
     recent_commits: list[LastCommit] = Field(default_factory=list)
     uncommitted_changes: list[dict[str, str]] = Field(default_factory=list)
-    worktree_info: Optional[WorktreeInfo] = None
+    worktree_info: WorktreeInfo | None = None
 
 
 class ProjectCreate(BaseModel):
@@ -124,10 +123,10 @@ class ProjectCreate(BaseModel):
 
     name: str
     path: str
-    group: Optional[str] = None
-    parent: Optional[str] = None
-    build_log: Optional[str] = None
-    test_log: Optional[str] = None
+    group: str | None = None
+    parent: str | None = None
+    build_log: str | None = None
+    test_log: str | None = None
 
 
 class ProjectListResponse(BaseModel):

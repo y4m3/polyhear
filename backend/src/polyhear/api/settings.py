@@ -8,7 +8,7 @@ router = APIRouter()
 
 
 @router.get("")
-async def get_ui_settings() -> dict:
+async def get_ui_settings() -> dict[str, dict[str, str | int | bool | list[str]]]:
     """Get current UI settings."""
     settings = get_settings()
 

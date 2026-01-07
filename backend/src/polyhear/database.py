@@ -1,12 +1,18 @@
 """Database management for polyhear."""
 
 import os
+from collections.abc import AsyncGenerator
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import Any
 
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 from polyhear.config import get_settings
 from polyhear.models.db import Base
@@ -14,7 +20,7 @@ from polyhear.models.db import Base
 
 # Enable foreign keys for SQLite
 @event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def set_sqlite_pragma(dbapi_connection: Any, connection_record: Any) -> None:
     """Enable foreign keys for SQLite connections."""
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
@@ -42,11 +48,11 @@ def get_database_url() -> str:
 
 
 # Create async engine
-_engine = None
-_async_session_maker = None
+_engine: AsyncEngine | None = None
+_async_session_maker: async_sessionmaker[AsyncSession] | None = None
 
 
-def get_engine():
+def get_engine() -> AsyncEngine:
     """Get or create the database engine."""
     global _engine
     if _engine is None:
@@ -57,7 +63,7 @@ def get_engine():
     return _engine
 
 
-def get_session_maker():
+def get_session_maker() -> async_sessionmaker[AsyncSession]:
     """Get or create the session maker."""
     global _async_session_maker
     if _async_session_maker is None:

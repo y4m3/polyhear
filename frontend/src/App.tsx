@@ -1,53 +1,53 @@
-import { useState, useEffect } from 'react'
-import { RefreshCw, Settings, Plus, Ear } from 'lucide-react'
-import { useProjects, useSettings, useAutoRefresh } from './hooks/useProjects'
-import { ProjectCard } from './components/ProjectCard'
-import { ProjectDetail } from './components/ProjectDetail'
-import { ProjectForm } from './components/ProjectForm'
-import type { Project } from './types/project'
+import { useState, useEffect } from "react";
+import { RefreshCw, Settings, Plus, Ear } from "lucide-react";
+import { useProjects, useSettings, useAutoRefresh } from "./hooks/useProjects";
+import { ProjectCard } from "./components/ProjectCard";
+import { ProjectDetail } from "./components/ProjectDetail";
+import { ProjectForm } from "./components/ProjectForm";
+import type { Project } from "./types/project";
 
 export default function App() {
-  const [selectedProject, setSelectedProject] = useState<string | null>(null)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const { data: projectsData, isLoading, error, refetch } = useProjects()
-  const { data: settings } = useSettings()
+  const { data: projectsData, isLoading, error, refetch } = useProjects();
+  const { data: settings } = useSettings();
 
   // Auto-refresh based on settings
-  const refreshInterval = (settings?.ui.refresh_interval ?? 30) * 1000
-  useAutoRefresh(refreshInterval)
+  const refreshInterval = (settings?.ui.refresh_interval ?? 30) * 1000;
+  useAutoRefresh(refreshInterval);
 
   // Close modal on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setSelectedProject(null)
-        setShowAddForm(false)
+      if (e.key === "Escape") {
+        setSelectedProject(null);
+        setShowAddForm(false);
       }
-    }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
-  }, [])
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
 
   const handleRefresh = () => {
-    refetch()
-  }
+    refetch();
+  };
 
   const handleProjectClick = (project: Project) => {
-    setSelectedProject(project.id)
-  }
+    setSelectedProject(project.id);
+  };
 
   const handleCloseDetail = () => {
-    setSelectedProject(null)
-  }
+    setSelectedProject(null);
+  };
 
   const handleAddProject = () => {
-    setShowAddForm(true)
-  }
+    setShowAddForm(true);
+  };
 
   const handleCloseForm = () => {
-    setShowAddForm(false)
-  }
+    setShowAddForm(false);
+  };
 
   return (
     <div className="min-h-screen bg-surface-950">
@@ -57,7 +57,9 @@ export default function App() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <Ear className="w-8 h-8 text-blue-400" />
-              <h1 className="text-xl font-semibold text-surface-100">polyhear</h1>
+              <h1 className="text-xl font-semibold text-surface-100">
+                polyhear
+              </h1>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -73,7 +75,9 @@ export default function App() {
                 className="p-2 rounded-lg hover:bg-surface-800 text-surface-400 hover:text-surface-100 transition-colors disabled:opacity-50"
                 title="Refresh"
               >
-                <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`w-5 h-5 ${isLoading ? "animate-spin" : ""}`}
+                />
               </button>
               <button
                 className="p-2 rounded-lg hover:bg-surface-800 text-surface-400 hover:text-surface-100 transition-colors"
@@ -139,7 +143,8 @@ export default function App() {
         {/* Last updated */}
         {projectsData && (
           <div className="mt-6 text-center text-sm text-surface-500">
-            Last updated: {new Date(projectsData.updated_at).toLocaleTimeString()}
+            Last updated:{" "}
+            {new Date(projectsData.updated_at).toLocaleTimeString()}
           </div>
         )}
       </main>
@@ -153,9 +158,7 @@ export default function App() {
       )}
 
       {/* Add project form */}
-      {showAddForm && (
-        <ProjectForm onClose={handleCloseForm} />
-      )}
+      {showAddForm && <ProjectForm onClose={handleCloseForm} />}
     </div>
-  )
+  );
 }

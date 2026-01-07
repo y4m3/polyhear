@@ -7,12 +7,9 @@ import json
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
-from polyhear.config import get_settings
 from polyhear.models.project import BuildStatus, StatusLevel, TestStatus
 from polyhear.services.git import detect_project_type
-
 
 # Log file search paths by project type
 LOG_FILE_PATTERNS = {
@@ -52,9 +49,9 @@ LOG_FILE_PATTERNS = {
 def find_log_file(
     repo_path: str | Path,
     log_type: str,
-    custom_path: Optional[str] = None,
-    project_type: Optional[str] = None,
-) -> Optional[Path]:
+    custom_path: str | None = None,
+    project_type: str | None = None,
+) -> Path | None:
     """Find a log file in the repository.
 
     Priority:
@@ -103,7 +100,7 @@ def parse_build_log(log_path: Path) -> BuildStatus:
     """
     try:
         content = log_path.read_text()
-    except (IOError, OSError):
+    except OSError:
         return BuildStatus(status=StatusLevel.UNKNOWN)
 
     status = StatusLevel.UNKNOWN
@@ -190,7 +187,7 @@ def parse_test_log(log_path: Path) -> TestStatus:
     """
     try:
         content = log_path.read_text()
-    except (IOError, OSError):
+    except OSError:
         return TestStatus(status=StatusLevel.UNKNOWN)
 
     # Try JSON format first
@@ -221,19 +218,19 @@ def _parse_test_log_json(content: str, log_path: Path) -> TestStatus:
     timestamp = None
     if "timestamp" in data:
         try:
-            timestamp = datetime.fromisoformat(
-                data["timestamp"].replace("Z", "+00:00")
-            )
+            timestamp = datetime.fromisoformat(data["timestamp"].replace("Z", "+00:00"))
         except (ValueError, AttributeError):
             pass
 
     failures = []
     for failure in data.get("failures", []):
         if isinstance(failure, dict):
-            failures.append({
-                "name": failure.get("name", "unknown"),
-                "message": failure.get("message", ""),
-            })
+            failures.append(
+                {
+                    "name": failure.get("name", "unknown"),
+                    "message": failure.get("message", ""),
+                }
+            )
 
     return TestStatus(
         status=status,
@@ -258,7 +255,7 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
     # Parse header section
     header_end = content.find("---")
     header = content[:header_end] if header_end > 0 else ""
-    body = content[header_end + 3:] if header_end > 0 else content
+    body = content[header_end + 3 :] if header_end > 0 else content
 
     for line in header.splitlines():
         line = line.strip()
@@ -285,9 +282,7 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
                 pass
         elif line.startswith("TIMESTAMP:"):
             try:
-                timestamp = datetime.fromisoformat(
-                    line[10:].strip().replace("Z", "+00:00")
-                )
+                timestamp = datetime.fromisoformat(line[10:].strip().replace("Z", "+00:00"))
             except ValueError:
                 pass
 
@@ -296,10 +291,12 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
         line = line.strip()
         if line.startswith("FAIL "):
             parts = line[5:].split(":", 1)
-            failures.append({
-                "name": parts[0].strip(),
-                "message": parts[1].strip() if len(parts) > 1 else "",
-            })
+            failures.append(
+                {
+                    "name": parts[0].strip(),
+                    "message": parts[1].strip() if len(parts) > 1 else "",
+                }
+            )
 
     # Infer status from counts if not set
     if status == StatusLevel.UNKNOWN:
@@ -327,7 +324,7 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
 
 async def get_build_status(
     repo_path: str | Path,
-    custom_log_path: Optional[str] = None,
+    custom_log_path: str | None = None,
 ) -> BuildStatus:
     """Get build status from log file."""
     repo_path = Path(repo_path)
@@ -342,7 +339,7 @@ async def get_build_status(
 
 async def get_test_status(
     repo_path: str | Path,
-    custom_log_path: Optional[str] = None,
+    custom_log_path: str | None = None,
 ) -> TestStatus:
     """Get test status from log file."""
     repo_path = Path(repo_path)

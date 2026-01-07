@@ -1,58 +1,61 @@
-import { useState } from 'react'
-import { X, FolderOpen, Loader2 } from 'lucide-react'
-import { useCreateProject } from '../hooks/useProjects'
-import type { ProjectCreate } from '../types/project'
+import { useState } from "react";
+import { X, FolderOpen, Loader2 } from "lucide-react";
+import { useCreateProject } from "../hooks/useProjects";
+import type { ProjectCreate } from "../types/project";
 
 interface ProjectFormProps {
-  onClose: () => void
+  onClose: () => void;
 }
 
 export function ProjectForm({ onClose }: ProjectFormProps) {
   const [formData, setFormData] = useState<ProjectCreate>({
-    name: '',
-    path: '',
-    group: '',
-    parent: '',
-    build_log: '',
-    test_log: '',
-  })
-  const [showAdvanced, setShowAdvanced] = useState(false)
+    name: "",
+    path: "",
+    group: "",
+    parent: "",
+    build_log: "",
+    test_log: "",
+  });
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const createProject = useCreateProject()
+  const createProject = useCreateProject();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Clean up optional fields
     const data: ProjectCreate = {
       name: formData.name.trim(),
       path: formData.path.trim(),
-    }
-    if (formData.group?.trim()) data.group = formData.group.trim()
-    if (formData.parent?.trim()) data.parent = formData.parent.trim()
-    if (formData.build_log?.trim()) data.build_log = formData.build_log.trim()
-    if (formData.test_log?.trim()) data.test_log = formData.test_log.trim()
+    };
+    if (formData.group?.trim()) data.group = formData.group.trim();
+    if (formData.parent?.trim()) data.parent = formData.parent.trim();
+    if (formData.build_log?.trim()) data.build_log = formData.build_log.trim();
+    if (formData.test_log?.trim()) data.test_log = formData.test_log.trim();
 
     try {
-      await createProject.mutateAsync(data)
-      onClose()
+      await createProject.mutateAsync(data);
+      onClose();
     } catch {
       // Error is handled by mutation state
     }
-  }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
     // Auto-fill name from path if name is empty
-    if (name === 'path' && !formData.name) {
-      const pathParts = value.split('/').filter(Boolean)
+    if (name === "path" && !formData.name) {
+      const pathParts = value.split("/").filter(Boolean);
       if (pathParts.length > 0) {
-        setFormData((prev) => ({ ...prev, name: pathParts[pathParts.length - 1] }))
+        setFormData((prev) => ({
+          ...prev,
+          name: pathParts[pathParts.length - 1],
+        }));
       }
     }
-  }
+  };
 
   return (
     <div
@@ -62,7 +65,9 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
       <div className="bg-surface-900 border border-surface-700 rounded-xl w-full max-w-lg mx-4 shadow-2xl">
         {/* Header */}
         <div className="px-6 py-4 border-b border-surface-700 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-surface-100">Add Project</h2>
+          <h2 className="text-lg font-semibold text-surface-100">
+            Add Project
+          </h2>
           <button
             onClick={onClose}
             className="p-1 rounded hover:bg-surface-800 text-surface-400 hover:text-surface-100"
@@ -75,7 +80,10 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Path */}
           <div>
-            <label htmlFor="path" className="block text-sm font-medium text-surface-300 mb-1">
+            <label
+              htmlFor="path"
+              className="block text-sm font-medium text-surface-300 mb-1"
+            >
               Repository Path <span className="text-red-400">*</span>
             </label>
             <div className="relative">
@@ -98,7 +106,10 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
 
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-surface-300 mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-surface-300 mb-1"
+            >
               Project Name <span className="text-red-400">*</span>
             </label>
             <input
@@ -119,7 +130,9 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="text-sm text-blue-400 hover:text-blue-300"
           >
-            {showAdvanced ? '- Hide advanced options' : '+ Show advanced options'}
+            {showAdvanced
+              ? "- Hide advanced options"
+              : "+ Show advanced options"}
           </button>
 
           {/* Advanced options */}
@@ -127,7 +140,10 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
             <div className="space-y-4 pt-2 border-t border-surface-700">
               {/* Group */}
               <div>
-                <label htmlFor="group" className="block text-sm font-medium text-surface-300 mb-1">
+                <label
+                  htmlFor="group"
+                  className="block text-sm font-medium text-surface-300 mb-1"
+                >
                   Group
                 </label>
                 <input
@@ -143,7 +159,10 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
 
               {/* Parent (for worktrees) */}
               <div>
-                <label htmlFor="parent" className="block text-sm font-medium text-surface-300 mb-1">
+                <label
+                  htmlFor="parent"
+                  className="block text-sm font-medium text-surface-300 mb-1"
+                >
                   Parent Project
                 </label>
                 <input
@@ -162,7 +181,10 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
 
               {/* Build log */}
               <div>
-                <label htmlFor="build_log" className="block text-sm font-medium text-surface-300 mb-1">
+                <label
+                  htmlFor="build_log"
+                  className="block text-sm font-medium text-surface-300 mb-1"
+                >
                   Build Log Path
                 </label>
                 <input
@@ -178,7 +200,10 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
 
               {/* Test log */}
               <div>
-                <label htmlFor="test_log" className="block text-sm font-medium text-surface-300 mb-1">
+                <label
+                  htmlFor="test_log"
+                  className="block text-sm font-medium text-surface-300 mb-1"
+                >
                   Test Log Path
                 </label>
                 <input
@@ -215,12 +240,14 @@ export function ProjectForm({ onClose }: ProjectFormProps) {
               disabled={createProject.isPending}
               className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              {createProject.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {createProject.isPending && (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              )}
               Add Project
             </button>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
