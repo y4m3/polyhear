@@ -186,6 +186,16 @@ db-reset:
     rm -f data/polyhear.db
     just db-migrate
 
+# === Smoke Tests ===
+
+# Run smoke tests (quick mode - non-destructive)
+smoke-test:
+    ./scripts/test-just-commands.sh
+
+# Run smoke tests (full mode - clean state, all commands)
+smoke-test-full:
+    ./scripts/test-just-commands.sh --full
+
 # === Utilities ===
 
 # Remove containers and clean up
