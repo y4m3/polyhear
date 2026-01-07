@@ -263,9 +263,7 @@ async def get_worktrees(repo_path: str | Path) -> list[WorktreeInfo]:
                 worktrees.append(
                     WorktreeInfo(
                         path=current_worktree.get("worktree", ""),
-                        branch=current_worktree.get("branch", "").replace(
-                            "refs/heads/", ""
-                        ),
+                        branch=current_worktree.get("branch", "").replace("refs/heads/", ""),
                         commit_hash=current_worktree.get("HEAD", ""),
                         is_bare=current_worktree.get("bare") == "bare",
                         is_detached="detached" in current_worktree,

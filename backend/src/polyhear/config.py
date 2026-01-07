@@ -50,30 +50,38 @@ class ProjectTypeDefaults(BaseModel):
 class DefaultsSettings(BaseModel):
     """Default settings by project type."""
 
-    node: ProjectTypeDefaults = Field(default_factory=lambda: ProjectTypeDefaults(
-        build_cmd="npm run build",
-        test_cmd="npm test",
-        build_log=".build.log",
-        test_log=".test-results.json",
-    ))
-    rust: ProjectTypeDefaults = Field(default_factory=lambda: ProjectTypeDefaults(
-        build_cmd="cargo build",
-        test_cmd="cargo test",
-        build_log="target/.build.log",
-        test_log="target/.test.log",
-    ))
-    python: ProjectTypeDefaults = Field(default_factory=lambda: ProjectTypeDefaults(
-        build_cmd="",
-        test_cmd="pytest",
-        build_log=".build.log",
-        test_log="pytest.log",
-    ))
-    go: ProjectTypeDefaults = Field(default_factory=lambda: ProjectTypeDefaults(
-        build_cmd="go build",
-        test_cmd="go test ./...",
-        build_log=".build.log",
-        test_log=".test.log",
-    ))
+    node: ProjectTypeDefaults = Field(
+        default_factory=lambda: ProjectTypeDefaults(
+            build_cmd="npm run build",
+            test_cmd="npm test",
+            build_log=".build.log",
+            test_log=".test-results.json",
+        )
+    )
+    rust: ProjectTypeDefaults = Field(
+        default_factory=lambda: ProjectTypeDefaults(
+            build_cmd="cargo build",
+            test_cmd="cargo test",
+            build_log="target/.build.log",
+            test_log="target/.test.log",
+        )
+    )
+    python: ProjectTypeDefaults = Field(
+        default_factory=lambda: ProjectTypeDefaults(
+            build_cmd="",
+            test_cmd="pytest",
+            build_log=".build.log",
+            test_log="pytest.log",
+        )
+    )
+    go: ProjectTypeDefaults = Field(
+        default_factory=lambda: ProjectTypeDefaults(
+            build_cmd="go build",
+            test_cmd="go test ./...",
+            build_log=".build.log",
+            test_log=".test.log",
+        )
+    )
 
 
 class LLMProviderSettings(BaseModel):
@@ -89,18 +97,24 @@ class LLMSettings(BaseModel):
 
     enabled: bool = False
     provider: str = "anthropic"
-    anthropic: LLMProviderSettings = Field(default_factory=lambda: LLMProviderSettings(
-        model="claude-sonnet-4-20250514",
-        api_key_env="ANTHROPIC_API_KEY",
-    ))
-    openai: LLMProviderSettings = Field(default_factory=lambda: LLMProviderSettings(
-        model="gpt-4o",
-        api_key_env="OPENAI_API_KEY",
-    ))
-    ollama: LLMProviderSettings = Field(default_factory=lambda: LLMProviderSettings(
-        endpoint="http://localhost:11434",
-        model="llama3",
-    ))
+    anthropic: LLMProviderSettings = Field(
+        default_factory=lambda: LLMProviderSettings(
+            model="claude-sonnet-4-20250514",
+            api_key_env="ANTHROPIC_API_KEY",
+        )
+    )
+    openai: LLMProviderSettings = Field(
+        default_factory=lambda: LLMProviderSettings(
+            model="gpt-4o",
+            api_key_env="OPENAI_API_KEY",
+        )
+    )
+    ollama: LLMProviderSettings = Field(
+        default_factory=lambda: LLMProviderSettings(
+            endpoint="http://localhost:11434",
+            model="llama3",
+        )
+    )
 
 
 class ProjectConfig(BaseModel):
@@ -248,13 +262,13 @@ def translate_project_path(path: str, settings: Settings) -> str:
     # Convert absolute host paths to container paths
     if settings.host_root and settings.container_root and path.startswith(settings.host_root):
         # Replace host root with container root
-        relative = path[len(settings.host_root):].lstrip("/")
+        relative = path[len(settings.host_root) :].lstrip("/")
         path = str(Path(settings.container_root) / relative)
 
     # Convert home directory paths to container home paths
     elif settings.host_home and settings.container_home and path.startswith(settings.host_home):
         # Replace host home with container home
-        relative = path[len(settings.host_home):].lstrip("/")
+        relative = path[len(settings.host_home) :].lstrip("/")
         path = str(Path(settings.container_home) / relative)
 
     return path
@@ -273,9 +287,7 @@ def translate_project_paths(settings: Settings) -> Settings:
         return settings
 
     # Only translate if we have translation configuration
-    needs_translation = (
-        settings.host_root and settings.container_root
-    ) or (
+    needs_translation = (settings.host_root and settings.container_root) or (
         settings.host_home and settings.container_home
     )
 

@@ -119,24 +119,12 @@ async def collect_project_data(
 
     # Extract results with proper type handling
     branch: str = results[0] if isinstance(results[0], str) else "unknown"
-    status: WorkingStatus = (
-        results[1] if isinstance(results[1], WorkingStatus) else WorkingStatus()
-    )
-    remote: RemoteStatus = (
-        results[2] if isinstance(results[2], RemoteStatus) else RemoteStatus()
-    )
-    commits: list[LastCommit] = (
-        results[3] if isinstance(results[3], list) else []
-    )
-    build_status: BuildStatus = (
-        results[4] if isinstance(results[4], BuildStatus) else BuildStatus()
-    )
-    test_status: TestStatus = (
-        results[5] if isinstance(results[5], TestStatus) else TestStatus()
-    )
-    todo_counts: dict[str, int] = (
-        results[6] if isinstance(results[6], dict) else {}
-    )
+    status: WorkingStatus = results[1] if isinstance(results[1], WorkingStatus) else WorkingStatus()
+    remote: RemoteStatus = results[2] if isinstance(results[2], RemoteStatus) else RemoteStatus()
+    commits: list[LastCommit] = results[3] if isinstance(results[3], list) else []
+    build_status: BuildStatus = results[4] if isinstance(results[4], BuildStatus) else BuildStatus()
+    test_status: TestStatus = results[5] if isinstance(results[5], TestStatus) else TestStatus()
+    todo_counts: dict[str, int] = results[6] if isinstance(results[6], dict) else {}
 
     # Count TODOs and FIXMEs
     todo_count = todo_counts.get("TODO", 0)
@@ -252,8 +240,7 @@ async def list_projects(
 
     # Filter out exceptions and convert to list
     valid_projects: list[Project] = [
-        p for p in projects
-        if isinstance(p, Project) and not isinstance(p, Exception)
+        p for p in projects if isinstance(p, Project) and not isinstance(p, Exception)
     ]
 
     # Organize worktrees under their parent projects
@@ -317,9 +304,7 @@ async def create_project(
 ) -> Project:
     """Register a new project to monitor."""
     # Check if already exists
-    result = await session.execute(
-        select(DBProject).where(DBProject.name == project.name)
-    )
+    result = await session.execute(select(DBProject).where(DBProject.name == project.name))
     if result.scalar_one_or_none():
         raise HTTPException(status_code=409, detail="Project with this name already exists")
 
@@ -364,9 +349,7 @@ async def delete_project(
     session: AsyncSession = Depends(get_session),
 ) -> dict[str, str]:
     """Remove a project from monitoring."""
-    result = await session.execute(
-        select(DBProject).where(DBProject.name == project_id)
-    )
+    result = await session.execute(select(DBProject).where(DBProject.name == project_id))
     db_project = result.scalar_one_or_none()
 
     if not db_project:

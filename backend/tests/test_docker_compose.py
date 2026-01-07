@@ -78,9 +78,7 @@ class TestDevBackendConfig:
                 found_port_var = True
                 break
 
-        assert found_port_var, (
-            "dev-backend port should use POLYHEAR_PORT environment variable"
-        )
+        assert found_port_var, "dev-backend port should use POLYHEAR_PORT environment variable"
 
 
 class TestDevFrontendConfig:
@@ -102,9 +100,7 @@ class TestDevFrontendConfig:
                 found_port_var = True
                 break
 
-        assert found_port_var, (
-            "dev-frontend port should use VITE_PORT environment variable"
-        )
+        assert found_port_var, "dev-frontend port should use VITE_PORT environment variable"
 
     def test_dev_frontend_has_vite_api_url(self, docker_compose_path: Path):
         """Verify dev-frontend has VITE_API_URL environment variable."""
@@ -122,9 +118,7 @@ class TestDevFrontendConfig:
                 found_vite_api_url = True
                 break
 
-        assert found_vite_api_url, (
-            "dev-frontend should have VITE_API_URL environment variable"
-        )
+        assert found_vite_api_url, "dev-frontend should have VITE_API_URL environment variable"
 
 
 class TestDockerComposeValidity:
@@ -148,9 +142,7 @@ class TestDockerComposeValidity:
                 text=True,
                 env=env,
             )
-        assert result.returncode == 0, (
-            f"docker compose config failed: {result.stderr}"
-        )
+        assert result.returncode == 0, f"docker compose config failed: {result.stderr}"
 
     def test_environment_variable_substitution(self, project_root: Path):
         """Verify environment variables are properly substituted."""

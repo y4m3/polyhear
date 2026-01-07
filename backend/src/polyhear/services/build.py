@@ -218,19 +218,19 @@ def _parse_test_log_json(content: str, log_path: Path) -> TestStatus:
     timestamp = None
     if "timestamp" in data:
         try:
-            timestamp = datetime.fromisoformat(
-                data["timestamp"].replace("Z", "+00:00")
-            )
+            timestamp = datetime.fromisoformat(data["timestamp"].replace("Z", "+00:00"))
         except (ValueError, AttributeError):
             pass
 
     failures = []
     for failure in data.get("failures", []):
         if isinstance(failure, dict):
-            failures.append({
-                "name": failure.get("name", "unknown"),
-                "message": failure.get("message", ""),
-            })
+            failures.append(
+                {
+                    "name": failure.get("name", "unknown"),
+                    "message": failure.get("message", ""),
+                }
+            )
 
     return TestStatus(
         status=status,
@@ -255,7 +255,7 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
     # Parse header section
     header_end = content.find("---")
     header = content[:header_end] if header_end > 0 else ""
-    body = content[header_end + 3:] if header_end > 0 else content
+    body = content[header_end + 3 :] if header_end > 0 else content
 
     for line in header.splitlines():
         line = line.strip()
@@ -282,9 +282,7 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
                 pass
         elif line.startswith("TIMESTAMP:"):
             try:
-                timestamp = datetime.fromisoformat(
-                    line[10:].strip().replace("Z", "+00:00")
-                )
+                timestamp = datetime.fromisoformat(line[10:].strip().replace("Z", "+00:00"))
             except ValueError:
                 pass
 
@@ -293,10 +291,12 @@ def _parse_test_log_text(content: str, log_path: Path) -> TestStatus:
         line = line.strip()
         if line.startswith("FAIL "):
             parts = line[5:].split(":", 1)
-            failures.append({
-                "name": parts[0].strip(),
-                "message": parts[1].strip() if len(parts) > 1 else "",
-            })
+            failures.append(
+                {
+                    "name": parts[0].strip(),
+                    "message": parts[1].strip() if len(parts) > 1 else "",
+                }
+            )
 
     # Infer status from counts if not set
     if status == StatusLevel.UNKNOWN:
