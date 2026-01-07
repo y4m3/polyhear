@@ -114,7 +114,15 @@ parse_args() {
 }
 
 # === Cleanup ===
+CLEANUP_DONE=0
+
 cleanup() {
+    # Prevent duplicate cleanup
+    if [[ $CLEANUP_DONE -eq 1 ]]; then
+        return
+    fi
+    CLEANUP_DONE=1
+
     if [[ $JSON_OUTPUT -eq 0 ]]; then
         echo ""
         echo "Cleaning up..."
@@ -123,12 +131,21 @@ cleanup() {
     # Kill background processes
     for pid in "${CLEANUP_PIDS[@]:-}"; do
         kill "$pid" 2>/dev/null || true
+        wait "$pid" 2>/dev/null || true
     done
 
     # Stop Docker containers
     just down 2>/dev/null || true
 }
-trap cleanup EXIT INT TERM
+
+# Signal handler for INT (Ctrl+C) and TERM
+signal_handler() {
+    cleanup
+    exit 130  # 128 + SIGINT(2)
+}
+
+trap signal_handler INT TERM
+trap cleanup EXIT
 
 # === Environment Detection ===
 detect_environment() {
