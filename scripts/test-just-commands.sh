@@ -373,8 +373,8 @@ test_long_running() {
     while [[ $elapsed -lt $timeout_sec ]]; do
         # Check if process died
         if ! kill -0 "$pid" 2>/dev/null; then
-            wait "$pid" 2>/dev/null || true
-            local exit_code=$?
+            local exit_code=0
+            wait "$pid" 2>/dev/null || exit_code=$?
             if [[ $exit_code -ne 0 ]]; then
                 print_fail "$cmd" "exited with code $exit_code"
                 record_result "$cmd" "fail" "$elapsed" "process exited with $exit_code"
