@@ -58,9 +58,9 @@ logs:
 # Initial project setup
 setup: setup-backend setup-frontend
 
-# Setup backend dependencies
+# Setup backend dependencies (including dev tools: ruff, mypy, pytest)
 setup-backend:
-    cd backend && uv sync
+    cd backend && uv sync --extra dev
 
 # Setup frontend dependencies
 setup-frontend:
