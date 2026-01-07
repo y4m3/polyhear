@@ -1,10 +1,26 @@
 """Tests for docker-compose.yml configuration."""
 
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 import yaml
+
+
+def is_docker_available() -> bool:
+    """Check if Docker is installed and daemon is running."""
+    if not shutil.which("docker"):
+        return False
+    try:
+        result = subprocess.run(
+            ["docker", "info"],
+            capture_output=True,
+            timeout=5,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, OSError):
+        return False
 
 
 @pytest.fixture
@@ -121,6 +137,7 @@ class TestDevFrontendConfig:
         assert found_vite_api_url, "dev-frontend should have VITE_API_URL environment variable"
 
 
+@pytest.mark.skipif(not is_docker_available(), reason="Docker is not available")
 class TestDockerComposeValidity:
     """Test docker-compose.yml is valid."""
 
